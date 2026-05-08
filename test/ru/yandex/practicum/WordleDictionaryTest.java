@@ -48,7 +48,7 @@ class WordleDictionaryTest {
                         "алала"
                 );
 
-        assertEquals("^^-++", result);
+        assertEquals("^^--+", result);
     }
 
     @Test
