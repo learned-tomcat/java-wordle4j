@@ -1,11 +1,13 @@
 package ru.yandex.practicum;
 
-public class EmptyDictionaryException
-        extends Exception {
+import java.io.Serial;
 
-    public EmptyDictionaryException(
-            String message) {
+public class EmptyDictionaryException extends RuntimeException {
 
+    @Serial
+    private static final long serialVersionUID = 1L;
+
+    public EmptyDictionaryException(String message) {
         super(message);
     }
 }

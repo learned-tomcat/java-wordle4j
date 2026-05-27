@@ -10,55 +10,47 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class WordleGameTest {
 
-    private WordleGame game;
+    private WordleDictionary dictionary;
+    private PrintWriter log;
 
     @BeforeEach
     void init() {
-
-        WordleDictionary dictionary =
-                new WordleDictionary(
-                        List.of(
-                                "герой",
-                                "кошка",
-                                "лампа",
-                                "ветка",
-                                "домик"
-                        )
-                );
-
-        game = new WordleGame(
-                dictionary,
-                6,
-                new PrintWriter(System.out)
+        dictionary = new WordleDictionary(
+                List.of(
+                        "герой",
+                        "гонец",
+                        "кошка",
+                        "лампа",
+                        "ветка",
+                        "домик"
+                )
         );
+
+        log = new PrintWriter(System.out);
     }
 
     @Test
     void moveReducesSteps()
-            throws Exception {
+            throws InvalidWordException, WordNotFoundInDictionaryException {
+        WordleGame game = new WordleGame(dictionary, 6, log, "герой");
 
-        int before =
-                game.getRemainingSteps();
+        int before = game.getRemainingSteps();
 
-        game.makeMove("герой");
+        game.makeMove("гонец");
 
-        assertEquals(
-                before - 1,
-                game.getRemainingSteps()
-        );
+        assertEquals(before - 1, game.getRemainingSteps());
     }
 
     @Test
     void invalidWordThrowsException() {
+        WordleGame game = new WordleGame(dictionary, 6, log, "герой");
 
-        assertThrows(
-                InvalidWordException.class,
-                () -> game.makeMove("12345")
-        );
+        assertThrows(InvalidWordException.class, () -> game.makeMove("12345"));
     }
 
     @Test
     void unknownWordThrowsException() {
+        WordleGame game = new WordleGame(dictionary, 6, log, "герой");
 
         assertThrows(
                 WordNotFoundInDictionaryException.class,
@@ -68,23 +60,55 @@ class WordleGameTest {
 
     @Test
     void hintShouldReturnWord() {
+        WordleGame game = new WordleGame(dictionary, 6, log, "герой");
 
         String hint = game.getHint();
 
         assertNotNull(hint);
-
-        assertEquals(5, hint.length());
+        assertEquals(WordleDictionary.WORD_LENGTH, hint.length());
+        assertTrue(dictionary.contains(hint));
     }
 
     @Test
-    void historyShouldContainMove()
-            throws Exception {
+    void correctLettersShouldBeSaved()
+            throws InvalidWordException, WordNotFoundInDictionaryException {
+        WordleGame game = new WordleGame(dictionary, 6, log, "герой");
+
+        game.makeMove("гонец");
+
+        assertEquals('г', game.getCorrectPositions().get(0));
+    }
+
+    @Test
+    void presentLettersShouldBeSaved()
+            throws InvalidWordException, WordNotFoundInDictionaryException {
+        WordleGame game = new WordleGame(dictionary, 6, log, "герой");
+
+        game.makeMove("гонец");
+
+        assertTrue(game.getPresentLetters().contains('о'));
+        assertTrue(game.getPresentLetters().contains('е'));
+    }
+
+    @Test
+    void absentLettersShouldBeSaved()
+            throws InvalidWordException, WordNotFoundInDictionaryException {
+        WordleGame game = new WordleGame(dictionary, 6, log, "герой");
+
+        game.makeMove("гонец");
+
+        assertTrue(game.getAbsentLetters().contains('н'));
+        assertTrue(game.getAbsentLetters().contains('ц'));
+    }
+
+    @Test
+    void gameShouldBeWonAfterCorrectAnswer()
+            throws InvalidWordException, WordNotFoundInDictionaryException {
+        WordleGame game = new WordleGame(dictionary, 6, log, "герой");
 
         game.makeMove("герой");
 
-        assertEquals(
-                1,
-                game.getHistory().size()
-        );
+        assertTrue(game.isWin());
+        assertTrue(game.isGameOver());
     }
 }
